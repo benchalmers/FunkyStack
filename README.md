@@ -41,6 +41,7 @@ Current development is by Ben Chalmers, and it is not considered ready for produ
 
 ### Coming soon 
 #### (if I get around to it.  not in any particular order)
+* Secrets
 * Authentication
   * Starting with federated login
   * Then passkeys
