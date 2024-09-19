@@ -8,8 +8,13 @@ test('has title', async ({ page }) => {
   await expect(page).toHaveTitle(/Ministack/);
 });
 
-test('welcomes default user', async ({ page }) => {
+test('welcomes default user, then changes that user to Test', async ({ page }) => {
 
   // Expects page to have a heading with the name of Installation.
   await expect(page.locator('h1')).toContainText('Hello Ministack User!')
+
+  await page.locator('input').fill('Test')
+  await page.locator('button').click()
+
+  await expect(page.locator('h1')).toContainText('Hello Test!')
 });
