@@ -18,7 +18,7 @@ type AppStateStore = {
 
 const useAppStateStore = create<AppStateStore>()(
   (set)=>({
-    currentUser: 'Ministack User',
+    currentUser: 'FunkyStack User',
     setCurrentUser: (name:string)=>set(produce((state)=>{state.currentUser =name}))
   })
 )
@@ -35,21 +35,19 @@ const Inside = ()=>{
     
     <Card>
       <CardHeader>
-        <CardTitle>Ministack Demo</CardTitle>
-        <CardDescription>A simple demo of Ministack components working in harmony</CardDescription>
+        <CardTitle>FunkyStack Demo</CardTitle>
+        <CardDescription>A simple demo of FunkyStack components working in harmony</CardDescription>
       </CardHeader>
       <CardContent>
         <h1>{greet}</h1>
 
         <Input className='mt-2' type="text" placeholder='User Name' value={name} onChange={(e)=>{setName(e.target.value)}}></Input>
-        <Button className='mt-2' variant="outline" onClick={()=>{setCurrentUser(name)}}>Click to change user</Button>
+        <Button className='mt-2' variant="outline" onClick={()=>{
+            setCurrentUser(name)
+          }}>Click to change user</Button>
       </CardContent>
 
     </Card>
-
-      {/* <button onClick={() => setCount((count) => count + 1)}>
-        count is {count}
-      </button> */}
   </>
 }
 
