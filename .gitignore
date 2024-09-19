@@ -23,6 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Prevent leaking secrets
+.env
+
 # sst
 .sst
 **/sst-env.d.ts
