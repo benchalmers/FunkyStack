@@ -20,7 +20,7 @@ export default $config({
     api.route('GET /{path+}', 'packages/api/trpc.handler', {})
     api.route('POST /{path+}', 'packages/api/trpc.handler', {})
 
-    new sst.aws.StaticSite("Website", {
+    const site = new sst.aws.StaticSite("Website", {
       environment: {
         VITE_API_URL: api.url
       },
@@ -31,6 +31,20 @@ export default $config({
       },
     })
 
+    const GoogleClientId = new sst.Secret('GOOGLE_CLIENT_ID')
+    const GoogleClientSecret = new sst.Secret('GOOGLE_CLIENT_SECRET')
 
+    const userPool = new sst.aws.CognitoUserPool("TheUsers")
+    userPool.addIdentityProvider('Google', {
+      type: "google",
+      details: {
+        client_id: GoogleClientId.value,
+        client_secret: GoogleClientSecret.value,
+        authorize_scopes: "sub"
+      },
+      attributes: {
+        username: 'sub'
+      }
+    })
   },
 });
