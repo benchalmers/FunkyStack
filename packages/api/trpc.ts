@@ -5,16 +5,43 @@ import {
 } from "@trpc/server/adapters/aws-lambda";
 import { APIGatewayProxyEventV2, Context as APIGWContext } from 'aws-lambda'
 import { initTRPC } from "@trpc/server";
+import * as jose from "jose"
+import { Resource } from "sst";
 
 
 console.log('This is trpc world')
 
-function createContext({
+let keys:undefined|ReturnType<typeof jose.createRemoteJWKSet>=undefined
+
+const createContext = async ({
     event,
     context
-  }: CreateAWSLambdaContextOptions<APIGatewayProxyEventV2>) {
+  }: CreateAWSLambdaContextOptions<APIGatewayProxyEventV2>) => {
     console.log("CTX", event)
+
+    let auth:{authenticated:false}|{authenticated:true, user:string}={authenticated:false}
+    let user
+    if (event.headers['authorization']) {
+      const [type,token]=event.headers['authorization'].split(' ',2)
+      console.log(type, token)
+      if (type==='Bearer') {
+        if (!keys)
+          keys = jose.createRemoteJWKSet(new URL(`https://cognito-idp.eu-west-2.amazonaws.com/${Resource.TheUsers.id}/.well-known/jwks.json`))
+        try {
+          console.log('try verify',token)
+          const value = await jose.jwtVerify(token, keys)
+          if (value.payload.sub)
+            auth={authenticated: true, user: value.payload.sub}
+        }
+        catch (e){
+          console.log('Verify failed', e)
+        }
+
+      }
+    }
+
     return {
+      auth: auth,
       event: event,
       context: context
     };
@@ -31,8 +58,8 @@ const publicProcedure = t.procedure
 export const router = t.router({
   greet: publicProcedure
     .input(z.object({ name: z.string() })).output(z.string())
-    .query(({ input }) => {
-        console.log('hello')
+    .query(({ input, ctx }) => {
+        console.log('hello', ctx.auth)
       return `Hello ${input.name}!`;
     }),
   

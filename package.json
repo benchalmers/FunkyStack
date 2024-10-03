@@ -1,11 +1,12 @@
 {
-  "name": "FunkyStack",
+  "name": "funkystack",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "pnpm exec playwright test"
+    "test": "pnpm exec playwright test",
+    "dev" : "pnpm dlx sst dev"
   },
   "keywords": [],
   "author": "",
@@ -14,8 +15,10 @@
     "@playwright/test": "^1.47.1",
     "@types/aws-lambda": "8.10.145",
     "@types/node": "^22.5.5",
+    "prettier": "^3.3.3",
     "sst": "3.1.7",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
   },
   "dependencies": {
     "zustand": "5.0.0-rc.2"

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@trpc/server": "11.0.0-rc.502",
+    "jose": "^5.9.3",
     "zod": "^3.23.8"
   }
 }
