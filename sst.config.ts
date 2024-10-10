@@ -1,8 +1,5 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
-import { debugPort } from "process";
-import { RouterUrlRouteArgs } from "./.sst/platform/src/components/aws";
-
 export default $config({
   app(input) {
     return {
@@ -13,7 +10,6 @@ export default $config({
     };
   },
   async run() {
-
 
     const listTable = new sst.aws.Dynamo("ListTable", {
       fields: {
@@ -62,8 +58,29 @@ export default $config({
 
 
 
-    const userPool = new sst.aws.CognitoUserPool("TheUsers")
-
+    const userPool = new sst.aws.CognitoUserPool("TheUsers",{
+      transform: {
+        userPool: (args)=>{
+          args.passwordPolicy = {
+            minimumLength: 20,
+            passwordHistorySize: 0,
+            requireLowercase: false,
+            requireNumbers: false,
+            requireSymbols: false,
+            requireUppercase: false, 
+            temporaryPasswordValidityDays: 1,
+          }
+          args.schemas=[{
+            attributeDataType: 'String',
+            name: 'UserChallenge',
+            mutable: true,
+            required: false
+          }]
+        },
+      }
+    })
+    const zone = new sst.Secret('FUNKY_DOMAIN_ZONE')
+    const domainName = new sst.Secret('FUNKY_DOMAIN_NAME')
     const api = new sst.aws.ApiGatewayV2("TheAPI", {
       cors: {
         allowOrigins: ["*"],
@@ -76,8 +93,7 @@ export default $config({
     api.route('POST /{path+}', { handler: 'packages/api/trpc.handler',
       link: [userPool, authTable, listTable, funkyDBTable, domainName]
     }, {});
-    const zone = new sst.Secret('FUNKY_DOMAIN_ZONE')
-    const domainName = new sst.Secret('FUNKY_DOMAIN_NAME')
+
     const finalName = domainName.value.apply(
       (t)=>(($app.stage!=='production')
         ?`${$app.stage}.${t}`
@@ -166,6 +182,7 @@ export default $config({
 
     return {
       api: api.url,
+      site: site.url,
       cognito: cognitoEndpoint,
       app: appUrl,
       userPool: userPool.id

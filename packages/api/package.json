@@ -12,7 +12,6 @@
   "license": "ISC",
   "devDependencies": {
     "typescript": "^5.6.3"
-    "typescript": "^5.6.3"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.658.0",

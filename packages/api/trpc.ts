@@ -63,6 +63,94 @@ const t = initTRPC
 
 const publicProcedure = t.procedure
 
+const passKeySettings = {
+  rpName: 'FunkyStack Example',
+  rpId: Resource.FUNKY_DOMAIN_NAME.value,
+  origin: `https://${Resource.FUNKY_DOMAIN_NAME.value}`
+}
+
+const cognitoClient = new CognitoIdentityProviderClient({})
+
+type PassKeySettings = {
+  rpName: string,
+  rpId: string,
+  origin: string
+}
+
+const passKeyHandler = (settings: PassKeySettings)=>{
+  return {
+    checkIfUserExists: async (user:string)=>{
+      console.log('CHECK IF USER EXISTS')
+      
+      try {
+        const result = await cognitoClient.send(new AdminGetUserCommand({
+          UserPoolId: Resource.TheUsers.id,
+          Username: user
+        }))
+        console.log(result)
+        if (result.Enabled) {
+          console.log()
+          return true
+        }
+      }
+      catch {}
+      console.log('NO USER FOUND')
+      return false
+    },
+    generateRegistrationOptions: async(userName: string, origin:string, rpid:string)=>{
+      return generateRegistrationOptions({
+        rpName: settings.rpName,
+        rpID: rpid,
+        userName: userName,
+        attestationType: 'none',
+        authenticatorSelection: {
+          residentKey: 'preferred',
+          userVerification: 'preferred',
+          authenticatorAttachment: 'platform'
+        }
+      })
+    },
+    createUser: async (userName: string, options: PublicKeyCredentialCreationOptionsJSON)=>{
+      const res = await cognitoClient.send(new AdminCreateUserCommand({
+        UserPoolId: Resource.TheUsers.id,
+        Username: userName,
+        UserAttributes: [
+          {
+            Name: "custom:UserChallenge",
+            Value: options.challenge
+          }
+        ],
+        TemporaryPassword: Buffer.from((crypto.getRandomValues(new Uint8Array(20)))).toString('hex'),
+        ForceAliasCreation: false,
+        MessageAction: 'SUPPRESS',
+        DesiredDeliveryMediums: []
+          
+        })
+      )
+      console.log('CREATE USER RESULT',res)
+      return options.challenge
+    }
+  }
+}
+
+
+export class FunkyAuthUserExists extends Error {}
+
+export class FunkyUninitializedUser extends Error {}
+
+const passKeys=passKeyHandler(passKeySettings)
+
+const getUserAttribute = (user: AdminGetUserCommandOutput, attribute: string)=>{
+  if (!(user.UserAttributes)) {
+    throw new FunkyUninitializedUser('Uninitialized User - no attributes')
+  }
+  const att = user.UserAttributes.find(a=>(a.Name===attribute))
+  if (!att || att.Value===undefined) {
+    throw new FunkyUninitializedUser(`Uninitialized User - no ${attribute}`)
+  }
+  return att.Value
+}
+
 export const router = t.router({
   greet: publicProcedure
     .input(z.object({ name: z.string() })).output(z.string())

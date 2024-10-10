@@ -3,8 +3,8 @@ import { ReactElement, Suspense, useEffect, useState } from 'react'
 //import viteLogo from '/vite.svg'
 import './App.css'
 import { Router} from 'api/trpc'
-import { createTRPCReact, httpBatchLink } from '@trpc/react-query'
-import { QueryClient, QueryClientProvider} from '@tanstack/react-query'
+import { createTRPCClient, createTRPCReact, httpBatchLink } from '@trpc/react-query'
+import { QueryClient, QueryClientProvider, useMutation, useQuery} from '@tanstack/react-query'
 import { create } from 'zustand'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Input } from './components/ui/input'
@@ -17,9 +17,6 @@ import {z} from "zod"
 import { persist, createJSONStorage } from 'zustand/middleware'
 import * as jose from 'jose'
 import { JWKSTimeout, JWTExpired } from 'jose/errors'
-import { StatementSync } from 'node:sqlite'
-import { Utensils } from 'lucide-react'
-
 import { browserSupportsWebAuthn, browserSupportsWebAuthnAutofill, startRegistration} from '@simplewebauthn/browser'
 import { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover'
 const zTokens = z.object({
@@ -30,10 +27,30 @@ const zTokens = z.object({
   expires_in: z.number().int()
 })
 
+const trpc = createTRPCReact<Router>();
+
+const trpcSetup = {
+  links:[httpBatchLink({
+    url: import.meta.env.VITE_API_URL, fetch: (url, options)=>(fetch(url, {...options})),
+    headers:()=>{
+      const state = useAppStateStore.getState()
+      if (state.auth && state.loggedIn)
+        return { Authorization: `${state.auth.token_type} ${state.auth.access_token}`}
+      return {}
+    }
+  })]
+}
+
+const trpcVanilla = createTRPCClient<Router>(trpcSetup)
+
+const queryClient = new QueryClient()
+const trpcClient = trpc.createClient(trpcSetup)
+
 type Tokens = z.infer<typeof zTokens>
 
 type AppStateStore = {
   currentUser: string,
+  createUser: (name: string)=>void,
   setCurrentUser: (name:string)=>void,
   loggedIn: boolean,
   loggingIn: boolean,
@@ -47,7 +64,7 @@ type AppStateStore = {
   logOut: ()=>void,
 }
 
-
+const goAsync = <T extends ((value: void) => void | PromiseLike<void>) | null | undefined,>(fn:T)=>{(async ()=>{})().then(fn)}
 
 const useAppStateStore = create<AppStateStore>()(
 
@@ -95,6 +112,19 @@ const useAppStateStore = create<AppStateStore>()(
           state.loggedIn = false
 
         }))
+
+      },
+      createUser: (userName:string)=>{
+        console.log('localCreateUser')
+        trpcVanilla.passKeyCreateUser.mutate({userName, origin: window.location.href, rpid: window.location.hostname}).then((options)=>{
+          console.log('User', options)
+          startRegistration(options).then(async attResp=>{
+            
+            console.log('AttResp', attResp)
+            await trpcVanilla.passKeyVerifyUser.mutate({expectedUserName:userName, expectedOrigin: window.location.href, expectedRPID: window.location.hostname, response:attResp} )
+            storeAttributes
+          })
+        })
 
       },
       currentUser: 'FunkyStack User',
@@ -177,7 +207,6 @@ const useAppStateStore = create<AppStateStore>()(
   })
 )
 
-const trpc = createTRPCReact<Router>();
 
 const LogOut = ()=>{
   const logout =  useAppStateStore((state)=>state.logOut)
@@ -188,6 +217,40 @@ const LoggedIn = (props: {children: ReactElement})=>{
   const loggedIn = useAppStateStore((state)=>state.loggedIn)
   return <>{loggedIn?props.children:<></>}</>
 
+}
+const LoggedOut = (props: {children: ReactElement})=>{
+  const loggedIn = useAppStateStore((state)=>state.loggedIn)
+  return <>{loggedIn?<></>:props.children}</>
+
+}
+
+const CreateAccount = ()=>{
+  const createUser = useAppStateStore((state)=>state.createUser)
+  const [user, setUser] = useState('')
+  const autoFill = useQuery({
+    queryKey: ['autofill'],
+    queryFn: async ()=>{
+      return browserSupportsWebAuthnAutofill()
+    }
+  })
+  const userExists=trpc.passKeyCreateUser.useMutation()
+
+  if (autoFill.isSuccess && autoFill.data==true)
+    return <Popover>
+      <PopoverTrigger asChild><Button variant='outline' >Create New Account</Button></PopoverTrigger>
+      <PopoverContent><Input placeholder='User Name' onChange={(e)=>{setUser(e.currentTarget.value)}} value={user}></Input>
+      {userExists.isSuccess && userExists.data ? <div>User already exists</div>: <></>}
+      <div className='flex justify-end'><Button className="mt-2" variant='outline'
+        onClick={async ()=>{
+          createUser(user)
+
+        }}
+      >Create</Button></div>
+
+      </PopoverContent>
+    </Popover>
+
+  return <></>
 }
 
 const Inside = ()=>{
@@ -207,9 +270,14 @@ const Inside = ()=>{
     }
   })
   return <>  
-    <Card>
-      {loggedIn?<>Logged In <LogOut/></>:<GoogleButton link={`${import.meta.env.VITE_COGNITO_ENDPOINT}/oauth2/authorize?identity_provider=Google&response_type=code&client_id=${import.meta.env.VITE_COGNITO_CLIENT}&redirect_uri=${window.location.href}auth`}>
-      </GoogleButton>}
+    <Card className='flex items-center p-1 gap-x-1'>
+      <LoggedIn><>Logged In <LogOut/></></LoggedIn>
+      <LoggedOut><>        
+        <CreateAccount />
+        <GoogleButton 
+          link={`${import.meta.env.VITE_COGNITO_ENDPOINT}/oauth2/authorize?identity_provider=Google&response_type=code&client_id=${import.meta.env.VITE_COGNITO_CLIENT}&redirect_uri=${window.location.href}auth`}
+        />
+      </></LoggedOut>
     </Card>
     <LoggedIn>
       <Card>
@@ -270,18 +338,7 @@ const ProcessAuth = ()=>{
 }
 
 function App() {
-  const [queryClient] = useState(()=>new QueryClient())
-  const [trpcClient]= useState(()=>trpc.createClient({
-    links:[httpBatchLink({
-      url: import.meta.env.VITE_API_URL, fetch: (url, options)=>(fetch(url, {...options})),
-      headers:()=>{
-        const state = useAppStateStore.getState()
-        if (state.auth && state.loggedIn)
-          return { Authorization: `${state.auth.token_type} ${state.auth.access_token}`}
-        return {}
-      }
-    })]
-  }))
+
   return (
     <>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
