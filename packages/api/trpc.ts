@@ -202,7 +202,7 @@ export const router = t.router({
         const challenge=getUserAttribute(user, 'userChallenge')
         const j={...input, expectedChallenge: challenge}
         const verifyResponse = await verifyRegistrationResponse(j)
-      })
+      }),
   putListItem: publicProcedure
     .input(z.object({name: z.string(), value: z.string()}))
     .mutation(async ({input})=>{

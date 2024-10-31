@@ -39,18 +39,18 @@ importers:
       '@aws-sdk/client-cognito-identity-provider':
         specifier: ^3.658.0
         version: 3.658.0
-      '@simplewebauthn/server':
-        specifier: ^10.0.1
-        version: 10.0.1
-      '@simplewebauthn/types':
-        specifier: ^10.0.0
-        version: 10.0.0
       '@aws-sdk/client-dynamodb':
         specifier: ^3.675.0
         version: 3.675.0
       '@aws-sdk/lib-dynamodb':
         specifier: ^3.675.0
         version: 3.675.0(@aws-sdk/client-dynamodb@3.675.0)
+      '@simplewebauthn/server':
+        specifier: ^10.0.1
+        version: 10.0.1
+      '@simplewebauthn/types':
+        specifier: ^10.0.0
+        version: 10.0.0
       '@trpc/server':
         specifier: 11.0.0-rc.502
         version: 11.0.0-rc.502
@@ -67,8 +67,6 @@ importers:
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
-
-  scripts: {}
 
   website:
     dependencies:
@@ -757,8 +755,8 @@ packages:
   '@floating-ui/core@1.6.8':
     resolution: {integrity: sha512-7XJ9cPU+yI2QeLS+FCSlqNFZJq8arvswefkZrYI1yQBbftw6FyrZOxYSh+9S7z7TpeWlRt9zJ5IhM1WIL334jA==}
 
-  '@floating-ui/dom@1.6.11':
-    resolution: {integrity: sha512-qkMCxSR24v2vGkhYDo/UzxfJN3D4syqSjyuTFz6C7XcpU1pASPRieNI0Kj5VP3/503mOfYiGY891ugBX1GlABQ==}
+  '@floating-ui/dom@1.6.12':
+    resolution: {integrity: sha512-NP83c0HjokcGVEMeoStg317VD9W7eDlGK7457dMBANbKA6GJZdc7rjujdgqzTaz93jkGgc5P/jeWbaCHnMNc+w==}
 
   '@floating-ui/react-dom@2.1.2':
     resolution: {integrity: sha512-06okr5cgPzMNBy+Ycse2A6udMi4bqwW/zgBF/rwjcNqWkyr82Mcg8b0vjX8OJpZFy/FKjJmw6wV7t44kK6kW7A==}
@@ -1595,6 +1593,11 @@ packages:
   acorn-walk@8.3.4:
     resolution: {integrity: sha512-ueEepnujpqee2o5aIYnvHU6C0A42MNdsIDeqy5BydrkuC5R1ZuUFnm27EeFJGoEHJQgn3uleRvmTXaJgfXbt4g==}
     engines: {node: '>=0.4.0'}
+
+  acorn@8.12.1:
+    resolution: {integrity: sha512-tcpGyI9zbizT9JbV6oYE477V6mTlXvvi0T0G3SNIYE2apm/G5huBa1+K89VGeovbg+jycCrfhl3ADxErOuO6Jg==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
 
   acorn@8.13.0:
     resolution: {integrity: sha512-8zSiw54Oxrdym50NlZ9sUusyO1Z1ZchgRLWRaK6c86XJFClyCgFKetdowBg5bKxyp/u+CDBJG4Mpp0m3HLZl9w==}
@@ -3078,7 +3081,7 @@ snapshots:
       '@smithy/node-http-handler': 3.2.3
       '@smithy/protocol-http': 4.1.3
       '@smithy/smithy-client': 3.3.5
-      '@smithy/types': 3.5.0
+      '@smithy/types': 3.4.2
       '@smithy/url-parser': 3.0.6
       '@smithy/util-base64': 3.0.0
       '@smithy/util-body-length-browser': 3.0.0
@@ -3089,7 +3092,7 @@ snapshots:
       '@smithy/util-middleware': 3.0.6
       '@smithy/util-retry': 3.0.6
       '@smithy/util-utf8': 3.0.0
-      tslib: 2.7.0
+      tslib: 2.8.0
     transitivePeerDependencies:
       - aws-crt
 
@@ -3132,7 +3135,7 @@ snapshots:
       '@smithy/util-middleware': 3.0.7
       '@smithy/util-retry': 3.0.7
       '@smithy/util-utf8': 3.0.0
-      tslib: 2.7.0
+      tslib: 2.8.0
     transitivePeerDependencies:
       - aws-crt
 
@@ -3345,8 +3348,8 @@ snapshots:
     dependencies:
       '@aws-sdk/types': 3.654.0
       '@smithy/property-provider': 3.1.6
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
 
   '@aws-sdk/credential-provider-env@3.667.0':
     dependencies:
@@ -3359,14 +3362,14 @@ snapshots:
   '@aws-sdk/credential-provider-http@3.654.0':
     dependencies:
       '@aws-sdk/types': 3.654.0
-      '@smithy/fetch-http-handler': 3.2.9
-      '@smithy/node-http-handler': 3.2.4
+      '@smithy/fetch-http-handler': 3.2.8
+      '@smithy/node-http-handler': 3.2.3
       '@smithy/property-provider': 3.1.6
-      '@smithy/protocol-http': 4.1.4
-      '@smithy/smithy-client': 3.4.0
-      '@smithy/types': 3.5.0
+      '@smithy/protocol-http': 4.1.3
+      '@smithy/smithy-client': 3.3.5
+      '@smithy/types': 3.4.2
       '@smithy/util-stream': 3.1.8
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@aws-sdk/credential-provider-http@3.667.0':
     dependencies:
@@ -3393,8 +3396,8 @@ snapshots:
       '@smithy/credential-provider-imds': 3.2.3
       '@smithy/property-provider': 3.1.6
       '@smithy/shared-ini-file-loader': 3.1.7
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
     transitivePeerDependencies:
       - '@aws-sdk/client-sso-oidc'
       - aws-crt
@@ -3413,7 +3416,7 @@ snapshots:
       '@smithy/property-provider': 3.1.7
       '@smithy/shared-ini-file-loader': 3.1.8
       '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      tslib: 2.8.0
     transitivePeerDependencies:
       - '@aws-sdk/client-sso-oidc'
       - aws-crt
@@ -3499,8 +3502,8 @@ snapshots:
       '@aws-sdk/types': 3.654.0
       '@smithy/property-provider': 3.1.6
       '@smithy/shared-ini-file-loader': 3.1.7
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
 
   '@aws-sdk/credential-provider-process@3.667.0':
     dependencies:
@@ -3518,8 +3521,8 @@ snapshots:
       '@aws-sdk/types': 3.654.0
       '@smithy/property-provider': 3.1.6
       '@smithy/shared-ini-file-loader': 3.1.7
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
     transitivePeerDependencies:
       - '@aws-sdk/client-sso-oidc'
       - aws-crt
@@ -3533,7 +3536,7 @@ snapshots:
       '@smithy/property-provider': 3.1.7
       '@smithy/shared-ini-file-loader': 3.1.8
       '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      tslib: 2.8.0
     transitivePeerDependencies:
       - '@aws-sdk/client-sso-oidc'
       - aws-crt
@@ -3557,8 +3560,8 @@ snapshots:
       '@aws-sdk/client-sts': 3.658.0
       '@aws-sdk/types': 3.654.0
       '@smithy/property-provider': 3.1.6
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
 
   '@aws-sdk/credential-provider-web-identity@3.667.0(@aws-sdk/client-sts@3.668.0)':
     dependencies:
@@ -3701,10 +3704,10 @@ snapshots:
     dependencies:
       '@aws-sdk/client-sso-oidc': 3.658.0(@aws-sdk/client-sts@3.658.0)
       '@aws-sdk/types': 3.654.0
-      '@smithy/property-provider': 3.1.7
-      '@smithy/shared-ini-file-loader': 3.1.8
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/property-provider': 3.1.6
+      '@smithy/shared-ini-file-loader': 3.1.7
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
 
   '@aws-sdk/token-providers@3.667.0(@aws-sdk/client-sso-oidc@3.668.0(@aws-sdk/client-sts@3.668.0))':
     dependencies:
@@ -3713,7 +3716,7 @@ snapshots:
       '@smithy/property-provider': 3.1.7
       '@smithy/shared-ini-file-loader': 3.1.8
       '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@aws-sdk/token-providers@3.667.0(@aws-sdk/client-sso-oidc@3.675.0(@aws-sdk/client-sts@3.675.0))':
     dependencies:
@@ -3722,7 +3725,7 @@ snapshots:
       '@smithy/property-provider': 3.1.7
       '@smithy/shared-ini-file-loader': 3.1.8
       '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@aws-sdk/types@3.654.0':
     dependencies:
@@ -4044,14 +4047,14 @@ snapshots:
     dependencies:
       '@floating-ui/utils': 0.2.8
 
-  '@floating-ui/dom@1.6.11':
+  '@floating-ui/dom@1.6.12':
     dependencies:
       '@floating-ui/core': 1.6.8
       '@floating-ui/utils': 0.2.8
 
   '@floating-ui/react-dom@2.1.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@floating-ui/dom': 1.6.11
+      '@floating-ui/dom': 1.6.12
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
@@ -4112,27 +4115,27 @@ snapshots:
     dependencies:
       '@peculiar/asn1-schema': 2.3.13
       asn1js: 3.0.5
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@peculiar/asn1-ecc@2.3.14':
     dependencies:
       '@peculiar/asn1-schema': 2.3.13
       '@peculiar/asn1-x509': 2.3.13
       asn1js: 3.0.5
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@peculiar/asn1-rsa@2.3.13':
     dependencies:
       '@peculiar/asn1-schema': 2.3.13
       '@peculiar/asn1-x509': 2.3.13
       asn1js: 3.0.5
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@peculiar/asn1-schema@2.3.13':
     dependencies:
       asn1js: 3.0.5
       pvtsutils: 1.3.5
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@peculiar/asn1-x509@2.3.13':
     dependencies:
@@ -4140,7 +4143,7 @@ snapshots:
       asn1js: 3.0.5
       ipaddr.js: 2.2.0
       pvtsutils: 1.3.5
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -4403,15 +4406,10 @@ snapshots:
 
   '@simplewebauthn/types@10.0.0': {}
 
-  '@smithy/abort-controller@2.2.0':
-    dependencies:
-      '@smithy/types': 2.12.0
-      tslib: 2.7.0
-
   '@smithy/abort-controller@3.1.4':
     dependencies:
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
 
   '@smithy/abort-controller@3.1.5':
     dependencies:
@@ -4462,11 +4460,11 @@ snapshots:
 
   '@smithy/credential-provider-imds@3.2.3':
     dependencies:
-      '@smithy/node-config-provider': 3.1.8
+      '@smithy/node-config-provider': 3.1.7
       '@smithy/property-provider': 3.1.6
-      '@smithy/types': 3.5.0
-      '@smithy/url-parser': 3.0.7
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      '@smithy/url-parser': 3.0.6
+      tslib: 2.8.0
 
   '@smithy/credential-provider-imds@3.2.4':
     dependencies:
@@ -4522,7 +4520,7 @@ snapshots:
 
   '@smithy/is-array-buffer@3.0.0':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@smithy/middleware-content-length@3.0.8':
     dependencies:
@@ -4632,8 +4630,8 @@ snapshots:
 
   '@smithy/property-provider@3.1.6':
     dependencies:
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
 
   '@smithy/property-provider@3.1.7':
     dependencies:
@@ -4652,9 +4650,9 @@ snapshots:
 
   '@smithy/querystring-builder@3.0.6':
     dependencies:
-      '@smithy/types': 3.5.0
+      '@smithy/types': 3.4.2
       '@smithy/util-uri-escape': 3.0.0
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@smithy/querystring-builder@3.0.7':
     dependencies:
@@ -4664,8 +4662,8 @@ snapshots:
 
   '@smithy/querystring-parser@3.0.6':
     dependencies:
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
 
   '@smithy/querystring-parser@3.0.7':
     dependencies:
@@ -4674,7 +4672,7 @@ snapshots:
 
   '@smithy/service-error-classification@3.0.6':
     dependencies:
-      '@smithy/types': 3.5.0
+      '@smithy/types': 3.4.2
 
   '@smithy/service-error-classification@3.0.7':
     dependencies:
@@ -4682,8 +4680,8 @@ snapshots:
 
   '@smithy/shared-ini-file-loader@3.1.7':
     dependencies:
-      '@smithy/types': 3.5.0
-      tslib: 2.7.0
+      '@smithy/types': 3.4.2
+      tslib: 2.8.0
 
   '@smithy/shared-ini-file-loader@3.1.8':
     dependencies:
@@ -4693,13 +4691,13 @@ snapshots:
   '@smithy/signature-v4@4.1.4':
     dependencies:
       '@smithy/is-array-buffer': 3.0.0
-      '@smithy/protocol-http': 4.1.4
-      '@smithy/types': 3.5.0
+      '@smithy/protocol-http': 4.1.3
+      '@smithy/types': 3.4.2
       '@smithy/util-hex-encoding': 3.0.0
-      '@smithy/util-middleware': 3.0.7
+      '@smithy/util-middleware': 3.0.6
       '@smithy/util-uri-escape': 3.0.0
       '@smithy/util-utf8': 3.0.0
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@smithy/signature-v4@4.2.0':
     dependencies:
@@ -4828,7 +4826,7 @@ snapshots:
 
   '@smithy/util-hex-encoding@3.0.0':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@smithy/util-middleware@3.0.6':
     dependencies:
@@ -4854,14 +4852,14 @@ snapshots:
 
   '@smithy/util-stream@3.1.8':
     dependencies:
-      '@smithy/fetch-http-handler': 3.2.9
-      '@smithy/node-http-handler': 3.2.4
-      '@smithy/types': 3.5.0
+      '@smithy/fetch-http-handler': 3.2.8
+      '@smithy/node-http-handler': 3.2.3
+      '@smithy/types': 3.4.2
       '@smithy/util-base64': 3.0.0
       '@smithy/util-buffer-from': 3.0.0
       '@smithy/util-hex-encoding': 3.0.0
       '@smithy/util-utf8': 3.0.0
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@smithy/util-stream@3.1.9':
     dependencies:
@@ -4876,7 +4874,7 @@ snapshots:
 
   '@smithy/util-uri-escape@3.0.0':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   '@smithy/util-utf8@2.3.0':
     dependencies:
@@ -5061,13 +5059,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  acorn-jsx@5.3.2(acorn@8.13.0):
+  acorn-jsx@5.3.2(acorn@8.12.1):
     dependencies:
-      acorn: 8.13.0
+      acorn: 8.12.1
 
   acorn-walk@8.3.4:
     dependencies:
-      acorn: 8.13.0
+      acorn: 8.12.1
+
+  acorn@8.12.1: {}
 
   acorn@8.13.0: {}
 
@@ -5107,13 +5107,13 @@ snapshots:
 
   aria-hidden@1.2.4:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   asn1js@3.0.5:
     dependencies:
       pvtsutils: 1.3.5
       pvutils: 1.1.3
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   autoprefixer@10.4.20(postcss@8.4.47):
     dependencies:
@@ -5340,8 +5340,8 @@ snapshots:
 
   espree@10.1.0:
     dependencies:
-      acorn: 8.13.0
-      acorn-jsx: 5.3.2(acorn@8.13.0)
+      acorn: 8.12.1
+      acorn-jsx: 5.3.2(acorn@8.12.1)
       eslint-visitor-keys: 4.0.0
 
   esquery@1.6.0:
@@ -5724,7 +5724,7 @@ snapshots:
 
   pvtsutils@1.3.5:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.0
 
   pvutils@1.1.3: {}
 
@@ -5742,7 +5742,7 @@ snapshots:
     dependencies:
       react: 18.3.1
       react-style-singleton: 2.2.1(@types/react@18.3.5)(react@18.3.1)
-      tslib: 2.7.0
+      tslib: 2.8.0
     optionalDependencies:
       '@types/react': 18.3.5
 
@@ -5751,7 +5751,7 @@ snapshots:
       react: 18.3.1
       react-remove-scroll-bar: 2.3.6(@types/react@18.3.5)(react@18.3.1)
       react-style-singleton: 2.2.1(@types/react@18.3.5)(react@18.3.1)
-      tslib: 2.7.0
+      tslib: 2.8.0
       use-callback-ref: 1.3.2(@types/react@18.3.5)(react@18.3.1)
       use-sidecar: 1.1.2(@types/react@18.3.5)(react@18.3.1)
     optionalDependencies:
@@ -5762,7 +5762,7 @@ snapshots:
       get-nonce: 1.0.1
       invariant: 2.2.4
       react: 18.3.1
-      tslib: 2.7.0
+      tslib: 2.8.0
     optionalDependencies:
       '@types/react': 18.3.5
 
@@ -6037,7 +6037,7 @@ snapshots:
   use-callback-ref@1.3.2(@types/react@18.3.5)(react@18.3.1):
     dependencies:
       react: 18.3.1
-      tslib: 2.7.0
+      tslib: 2.8.0
     optionalDependencies:
       '@types/react': 18.3.5
 
@@ -6045,7 +6045,7 @@ snapshots:
     dependencies:
       detect-node-es: 1.1.0
       react: 18.3.1
-      tslib: 2.7.0
+      tslib: 2.8.0
     optionalDependencies:
       '@types/react': 18.3.5
 
