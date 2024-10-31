@@ -15,6 +15,51 @@ export default $config({
   async run() {
 
 
+    const funkyDBTable = new sst.aws.Dynamo("FunkyDBTable", {
+      fields: {
+        FDBTenant: 'string',
+        FDBTableEntry: 'string'
+      },
+      primaryIndex: {hashKey: 'FDBTenant', rangeKey: 'FDBTableEntry'},
+      transform: {
+        table: {
+          billingMode: 'PAY_PER_REQUEST'
+        }
+      }
+    })
+
+    const listTable = new sst.aws.Dynamo("ListTable", {
+      fields: {
+        id: 'string',
+        name: 'string'
+      },
+      primaryIndex: {hashKey: 'id'},
+      globalIndexes: {
+        nameIndex: {hashKey: 'id', rangeKey: 'name'}
+      },
+      transform: {
+        table: {
+          billingMode: 'PAY_PER_REQUEST'
+        }
+      }
+    })
+
+    const authTable = new sst.aws.Dynamo("Auth", {
+      fields: {
+        username: 'string',
+        userid: 'string'
+      },
+      primaryIndex: {hashKey: 'userid'},
+      globalIndexes: {
+        nameIndex: {hashKey: 'userid', rangeKey: 'username'}
+      },
+      transform: {
+        table: {
+          billingMode: 'PAY_PER_REQUEST'
+        }
+      }
+    })
+
     const userPool = new sst.aws.CognitoUserPool("TheUsers")
 
     const api = new sst.aws.ApiGatewayV2("TheAPI", {
@@ -24,10 +69,10 @@ export default $config({
       },
     });
     api.route('GET /{path+}', { handler: 'packages/api/trpc.handler',
-      link: [userPool]
+      link: [userPool, authTable, listTable, funkyDBTable]
     }, {});
     api.route('POST /{path+}', { handler: 'packages/api/trpc.handler',
-      link: [userPool]
+      link: [userPool, authTable, listTable, funkyDBTable]
     }, {});
     const zone = new sst.Secret('FUNKY_DOMAIN_ZONE')
     const domainName = new sst.Secret('FUNKY_DOMAIN_NAME')
@@ -115,6 +160,8 @@ export default $config({
       },
     })
    
+
+
     return {
       api: api.url,
       cognito: cognitoEndpoint,

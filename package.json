@@ -6,21 +6,21 @@
   "type": "module",
   "scripts": {
     "test": "pnpm exec playwright test",
-    "dev" : "pnpm dlx sst dev"
+    "dev": "zellij attach --create-background sstdev; zellij --session sstdev run -- pnpm exec sst dev; zellij attach sstdev"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.47.1",
+    "@playwright/test": "^1.48.1",
     "@types/aws-lambda": "8.10.145",
-    "@types/node": "^22.5.5",
+    "@types/node": "^22.7.7",
     "prettier": "^3.3.3",
-    "sst": "3.1.7",
+    "sst": "^3.2.38",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   },
   "dependencies": {
-    "zustand": "5.0.0-rc.2"
+    "zustand": "^5.0.0"
   }
 }

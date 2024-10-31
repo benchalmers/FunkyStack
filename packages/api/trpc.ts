@@ -7,7 +7,10 @@ import { APIGatewayProxyEventV2, Context as APIGWContext } from 'aws-lambda'
 import { initTRPC } from "@trpc/server";
 import * as jose from "jose"
 import { Resource } from "sst";
-
+import {dbMakeId,  ddbDocClient, ListItem} from "./Db"
+import { PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { Result, ResultAsync } from "neverthrow";
 
 console.log('This is trpc world')
 
@@ -62,8 +65,30 @@ export const router = t.router({
         console.log('hello', ctx.auth)
       return `Hello ${input.name}!`;
     }),
+  putListItem: publicProcedure
+    .input(z.object({name: z.string(), value: z.string()}))
+    .mutation(async ({input})=>{
+      const id = dbMakeId()
+      const res = await ResultAsync.combine([
+        ListItem.put('DEMOBEN2', id, {name: input.name, value: input.value})
+      ])
+      if (res.isErr()) {
+        throw res.error
+      }
+      console.log('SENT')
+    }),
+  getList: publicProcedure
+  .query(async ()=>{
+    const res = await ListItem.getAny('DEMOBEN2')
+    if (res.isErr()) {
+      throw res.error
+    }
+    return res.value
+    
+  })
   
 });
+
 
 export type Router = typeof router;
 

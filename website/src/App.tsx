@@ -18,6 +18,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import * as jose from 'jose'
 import { JWKSTimeout, JWTExpired } from 'jose/errors'
 import { StatementSync } from 'node:sqlite'
+import { Utensils } from 'lucide-react'
 
 const zTokens = z.object({
   access_token: z.string(),
@@ -188,12 +189,21 @@ const LoggedIn = (props: {children: ReactElement})=>{
 }
 
 const Inside = ()=>{
+  const [iname, setIname] = useState('')
+  const [ival, setIval] = useState('')
+  const list = trpc.getList.useQuery()
+  const utils = trpc.useUtils()
   const [name, setName] = useState('')
   const setCurrentUser = useAppStateStore((state)=>state.setCurrentUser)
   const currentUser=useAppStateStore((state)=>state.currentUser)
   const [greet,] = trpc.greet.useSuspenseQuery({name: currentUser})
   const loggedIn = useAppStateStore((state)=>state.loggedIn)
   console.log(import.meta.env, loggedIn, useAppStateStore.getState())
+  const listMutate = trpc.putListItem.useMutation({
+    onSettled: async()=>{
+      utils.getList.invalidate()
+    }
+  })
   return <>  
     <Card>
       {loggedIn?<>Logged In <LogOut/></>:<GoogleButton link={`${import.meta.env.VITE_COGNITO_ENDPOINT}/oauth2/authorize?identity_provider=Google&response_type=code&client_id=${import.meta.env.VITE_COGNITO_CLIENT}&redirect_uri=${window.location.href}auth`}>
@@ -215,7 +225,22 @@ const Inside = ()=>{
         </CardContent>
 
       </Card>
+
     </LoggedIn>
+    <Card>
+        <CardContent>
+          <div className='flex flex-row'>
+            <Input type='text' placeholder='Name' value={iname} onChange={(e)=>{setIname(e.target.value)}} />
+            <Input type='text' placeholder='Value' value={ival} onChange={(e)=>{setIval(e.target.value)}} />
+          </div>
+          <Button variant="outline" onClick={ ()=>{
+            listMutate.mutateAsync({name: iname, value: ival})
+          }}>Submit</Button>
+          { list.isSuccess ? <>
+            {list.data.map(a=><div key={a.FDBId}>{a.FDBId} {a.name} {a.value}</div>)}
+          </>:<>Nothing to see here</> }
+        </CardContent>
+      </Card>
   </>
 }
 
