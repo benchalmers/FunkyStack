@@ -123,7 +123,7 @@ export default $config({
 
     const client = userPool.addClient('Web', {
       providers: [provider.providerName],
-      transform: { client: (args, opts, name)=>{
+      transform: { client: (args)=>{
         args.callbackUrls = ['http://localhost:5174/auth','http://localhost:5173/auth', finalName.apply(t=>`https://${t}/auth`)]
       } }
     })
@@ -132,7 +132,7 @@ export default $config({
     
 
     if (!$dev) {
-      const authDomainRecord = sst.aws.dns({zone: zone.value}).createAlias('AuthDomainRecord',{
+      sst.aws.dns({zone: zone.value}).createAlias('AuthDomainRecord',{
         name: finalName.apply(authDomainFn), 
         aliasName: domainName.value, 
         aliasZone: zone.value},{})

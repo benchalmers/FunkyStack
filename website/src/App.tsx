@@ -4,20 +4,20 @@ import { ReactElement, Suspense, useEffect, useState } from 'react'
 import './App.css'
 import { Router} from 'api/trpc'
 import { createTRPCClient, createTRPCReact, httpBatchLink } from '@trpc/react-query'
-import { QueryClient, QueryClientProvider, useMutation, useQuery} from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, useQuery} from '@tanstack/react-query'
 import { create } from 'zustand'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
 import { Input } from './components/ui/input'
 import { Button } from './components/ui/button'
 import {produce} from 'immer'
 import { GoogleButton } from './components/google'
-import { CognitoIdentityProviderClient, InitiateAuthCommand } from '@aws-sdk/client-cognito-identity-provider'
-import {Link, Route, Switch, useLocation, useSearch} from "wouter"
+import {Route, Switch, useLocation, useSearch} from "wouter"
 import {z} from "zod"
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { persist } from 'zustand/middleware'
 import * as jose from 'jose'
-import { JWKSTimeout, JWTExpired } from 'jose/errors'
-import { browserSupportsWebAuthn, browserSupportsWebAuthnAutofill, startRegistration} from '@simplewebauthn/browser'
+import { JWTExpired } from 'jose/errors'
+
+import { browserSupportsWebAuthnAutofill, startRegistration} from '@simplewebauthn/browser'
 import { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover'
 const zTokens = z.object({
   access_token: z.string(),
@@ -64,13 +64,12 @@ type AppStateStore = {
   logOut: ()=>void,
 }
 
-const goAsync = <T extends ((value: void) => void | PromiseLike<void>) | null | undefined,>(fn:T)=>{(async ()=>{})().then(fn)}
+// const goAsync = <T extends ((value: void) => void | PromiseLike<void>) | null | undefined,>(fn:T)=>{(async ()=>{})().then(fn)}
 
 const useAppStateStore = create<AppStateStore>()(
 
-  persist((set, get)=>{
+  persist((set)=>{
     console.log('Create zustand')
-    const cognitoClient = new CognitoIdentityProviderClient({region: "eu-west-2"})
 
     return {
       logOut: ()=>{
@@ -193,7 +192,7 @@ const useAppStateStore = create<AppStateStore>()(
         }))
   }
   }},{name:'funkyStore',
-    onRehydrateStorage: (state)=>{
+    onRehydrateStorage: ()=>{
       return (state?:AppStateStore, error?:unknown)=>{
         if (error) {
           console.log('Hydration Error', error)
@@ -320,19 +319,20 @@ const ProcessAuth = ()=>{
   const loggedIn = useAppStateStore((state)=>state.loggedIn)
   const authorize = useAppStateStore((state)=>state.authorize)
   const code = searchParams.has('code')?searchParams.get('code'):undefined
-  const [location, setLocation] = useLocation()
+  const [, setLocation] = useLocation()
   useEffect(()=>{
 
     if (code && !loggedIn) {
       authorize(code, `${window.location.protocol}//${window.location.host}/auth`)
     }
-  },[])
+  },[code, loggedIn, authorize])
+  
   useEffect(()=>{
     if (loggedIn) {
       console.log('loggedIn!')
       setLocation('/')
     }
-  },[loggedIn])
+  },[loggedIn, setLocation])
 
   return <>Auth = {code}</>
 }
