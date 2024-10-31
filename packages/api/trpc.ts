@@ -7,6 +7,11 @@ import { APIGatewayProxyEventV2, Context as APIGWContext } from 'aws-lambda'
 import { initTRPC } from "@trpc/server";
 import * as jose from "jose"
 import { Resource } from "sst";
+import { AdminCreateUserCommand, AdminGetUserCommand, AdminGetUserCommandOutput, CognitoIdentityProviderClient, CreateUserImportJobCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { generateRegistrationOptions, verifyRegistrationResponse } from "@simplewebauthn/server";
+import { urlToHttpOptions } from "url";
+import { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types";
+import { inherits } from "util";
 import {dbMakeId,  ddbDocClient, ListItem} from "./Db"
 import { PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { QueryCommand } from "@aws-sdk/lib-dynamodb";
@@ -65,6 +70,51 @@ export const router = t.router({
         console.log('hello', ctx.auth)
       return `Hello ${input.name}!`;
     }),
+  passKeyCreateUser : publicProcedure
+    .input(z.object({userName: z.string(), origin: z.string().url(), rpid:z.string()}))
+    .mutation(async ({input, ctx})=>{
+      if (await passKeys.checkIfUserExists(input.userName)) {
+        throw new FunkyAuthUserExists('User Exists')
+      }
+      const options = await passKeys.generateRegistrationOptions(input.userName, input.origin, input.rpid)
+      await passKeys.createUser(input.userName, options)
+      return options
+    }),
+    passKeyVerifyUser: publicProcedure
+      .input(z.object({
+        expectedUserName: z.string(), expectedOrigin: z.string().url(), expectedRPID:z.string(),
+        response: z.object({
+          id: z.string().base64(),
+          rawId: z.string().base64(),
+          response: z.object({
+            clientDataJSON: z.string().base64(),
+            attestationObject: z.string().base64(),
+            authenticatiorData: z.string().base64().optional(),
+            transports: z.array(z.enum([ 'ble', 'cable' , 'hybrid' , 'internal' , 'nfc' , 'smart-card' , 'usb'])).optional(),
+            COSEAlgorithmIdentifier: z.number().optional(),
+            publicKey: z.string().base64().optional()
+          }),
+          clientExtensionResults: z.object({
+            appId: z.boolean().optional(),
+            hmacCreateSecret: z.boolean().optional(),
+            credProps: z.object({
+              rk: z.boolean().optional()
+            }).optional()
+          }),
+          type: z.literal('public-key')
+        })
+      }))
+      .mutation(async ({input})=>{
+        
+        const user = await cognitoClient.send(new AdminGetUserCommand({
+          Username: input.expectedUserName,
+          UserPoolId: Resource.TheUsers.id
+        }))
+
+        const challenge=getUserAttribute(user, 'userChallenge')
+        const j={...input, expectedChallenge: challenge}
+        const verifyResponse = await verifyRegistrationResponse(j)
+      })
   putListItem: publicProcedure
     .input(z.object({name: z.string(), value: z.string()}))
     .mutation(async ({input})=>{

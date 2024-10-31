@@ -20,6 +20,8 @@ import { JWKSTimeout, JWTExpired } from 'jose/errors'
 import { StatementSync } from 'node:sqlite'
 import { Utensils } from 'lucide-react'
 
+import { browserSupportsWebAuthn, browserSupportsWebAuthnAutofill, startRegistration} from '@simplewebauthn/browser'
+import { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover'
 const zTokens = z.object({
   access_token: z.string(),
   id_token: z.string(),
