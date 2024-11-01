@@ -115,13 +115,13 @@ const useAppStateStore = create<AppStateStore>()(
       },
       createUser: (userName:string)=>{
         console.log('localCreateUser')
-        trpcVanilla.passKeyCreateUser.mutate({userName, origin: window.location.href, rpid: window.location.hostname}).then((options)=>{
+        trpcVanilla.passKeyCreateUser.mutate({userName}).then((options)=>{
           console.log('User', options)
           startRegistration(options).then(async attResp=>{
             
             console.log('AttResp', attResp)
-            await trpcVanilla.passKeyVerifyUser.mutate({expectedUserName:userName, expectedOrigin: window.location.href, expectedRPID: window.location.hostname, response:attResp} )
-            storeAttributes
+            await trpcVanilla.passKeyVerifyUser.mutate({expectedUserName:userName, response:attResp} )
+            //storeAttributes
           })
         })
 

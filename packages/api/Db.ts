@@ -33,7 +33,7 @@ const listToString=(list:string[])=>{
 }
 
 
-export const dbMakeId=()=>(Buffer.from(crypto.getRandomValues(new Uint8Array(20))).toString('hex'))
+export const FDbMakeId=()=>(Buffer.from(crypto.getRandomValues(new Uint8Array(20))).toString('hex'))
 
 const zBase = z.object({
     FDBTableEntry:z.string(),
@@ -76,12 +76,7 @@ const fListItem: FTable<tListItem> = {
     name: 'ListItem'
 } as const
 
-const zCredential = z.object({
-    id: z.string(),
-    publicKey: z.string(),
-    counter: z.number().int().min(0),
-    transports: z.string()
-})
+
 
 
 type FDbTable<Z extends FTableSchema> = {
@@ -109,6 +104,14 @@ export const ListItem = fDbMakeTable(fListItem)
 // ['Credential,<credId>,'publicKey']:<publicKey>
 // ['Credential,<credId>,'counter']:<counter>
 // ['Credential',<credId>,'transports']:<transports>
+
+const zCredential = z.object({
+    id: z.string(),
+    publicKey: z.array(z.number().int().min(0).max(255)),
+    counter: z.number().int().min(0),
+    transports: z.array(z.string())
+})
+
 export const UserItem = fDbMakeTable({
     z: zBase.extend({
         userName:z.string(),
@@ -133,8 +136,8 @@ const zAuthUser = zBase.extend({
     challengeTimeout:z.number().int().min(0)
 })
 type TAuthUser = typeof zAuthUser
-type AuthUser = z.infer<TAuthUser>
-
+type FDbAuthUser = z.infer<TAuthUser>
+export type AuthUser = Omit<FDbAuthUser, FDBKeys>
 const getBatchedUserNamesFromUserItems=(tenant: string, items:ReturnType<typeof UserItem['getAny']>)=>{
     const jres=items.andThen(r=>{
         const kres = UserName.getBatch(tenant, r.map(j=>j.userName)).andThen( p=>{
@@ -155,7 +158,7 @@ const getBatchedUserNamesFromUserItems=(tenant: string, items:ReturnType<typeof 
 export const FBAuthUser:FDbTable<
     TAuthUser
 > = {
-    put: (tenant: string, id: string, contents:Omit<AuthUser, FDBKeys>)=>{
+    put: (tenant: string, id: string, contents:Omit<FDbAuthUser, FDBKeys>)=>{
         const res =  ResultAsync.combine([
             UserItem.put(tenant, id, {
                 userName: contents.userName,
@@ -171,18 +174,21 @@ export const FBAuthUser:FDbTable<
 
     },
     getOne: (tenant:string, id:string)=>{
-        const res = UserItem.getOne(tenant, id)
-        const jres = res.map(j=>{
-            const kres = UserName.getOne(tenant, j.userName)
-            const lres = kres.map(k=>({
-                userName:j.userName,
-                credentials:j.credentials,
-                challenge: k.challenge,
-                challengeTimeout: k.challengeTimeout
-            }))
-            return lres
-        })
-        return errAsync('Unable to fetch User details')
+        const res = UserItem.getOne(tenant, id).
+                             andThen((jres)=>(
+                                UserName.getOne(tenant, jres.userName)
+                                    .andThen((kres)=>{
+                                        return ok({
+                                            FDBId: jres.FDBId,
+                                            userName: jres.userName,
+                                            credentials:jres.credentials,
+                                            challenge: kres.challenge,
+                                            challengeTimeout: kres.challengeTimeout
+                                        })    
+                                    })
+                             ))
+        return res
+     
     },
     getAny: (tenant:string)=>{
         const res = UserItem.getAny(tenant)
@@ -219,6 +225,7 @@ const fDbDelete=<F extends FTable<FTableSchema>>(table:F, tenant:string,  id:str
 
 const fDbStore=<F extends FTable<FTableSchema>>(table:F, tenant:string,  id:string, contents:Omit<z.infer<F['z']>, FDBKeys> )=>{
     const keyStr = `${table.name}#${id}`
+    console.log('STORE', keyStr, contents)
     const res = ResultAsync.fromThrowable(async ()=>(await ddbDocClient.send( 
         new PutCommand({
             TableName: Resource.FunkyDBTable.name,
@@ -234,40 +241,44 @@ const fDbStore=<F extends FTable<FTableSchema>>(table:F, tenant:string,  id:stri
 }
 const fDbGetOne=<F extends FTable<FTableSchema>>(table:F, tenant:string,  id:string )=>{
     const keyStr = `${table.name}#${id}`
+    console.log('GeetOne',tenant, keyStr)
     type O = Omit<z.infer<F['z']>,FDBInternal>
-    const res = ResultAsync.fromThrowable(async ()=>(await ddbDocClient.send( 
-        new GetCommand({
-            TableName: Resource.FunkyDBTable.name,
-            Key: {
-                hash: tenant,
-                search: keyStr
-            }
-        })
-    )))()
-    return res.map((r)=>{return table.z.parse(r.Item)as unknown as O})
+    const r = ResultAsync.fromThrowable(async ()=>{
+        const res = await ddbDocClient.send( 
+            new GetCommand({
+                TableName: Resource.FunkyDBTable.name,
+                Key: {
+                    FDBTenant: tenant,
+                    FDBTableEntry: keyStr,
+                }
+            })
+        )
+        const out = table.z.parse(res.Item) as unknown as O
+        return out
+    })()
+
+    return r
 }
 
 const fDBGetAny=<F extends FTable<FTableSchema>>(table:F, tenant:string)=>{
     type O = Omit<z.infer<F['z']>,FDBInternal>
     const keyStr = `${table.name}#`
-    const res = ResultAsync.fromThrowable(async ()=>(await ddbDocClient.send( 
-        new QueryCommand({
-            ExpressionAttributeValues: {
-                ':ktenant' : tenant,
-                ':ktable'  : keyStr,
-            },
-            TableName: Resource.FunkyDBTable.name,
-            KeyConditionExpression: " FDBTenant = :ktenant and begins_with(FDBTableEntry, :ktable)",
+    const res = ResultAsync.fromThrowable(async ()=>{
+        const u = await ddbDocClient.send( 
+            new QueryCommand({
+                ExpressionAttributeValues: {
+                    ':ktenant' : tenant,
+                    ':ktable'  : keyStr,
+                },
+                TableName: Resource.FunkyDBTable.name,
+                KeyConditionExpression: " FDBTenant = :ktenant and begins_with(FDBTableEntry, :ktable)",
 
-        })
-    )))()
+            })
+        )
+        return (u.Items??[]).map((j)=>(table.z.parse(j)as unknown as O))
+    })()
 
-    return res.map(
-                    (r)=>{
-                        return (r.Items??[]).map((j)=>(table.z.parse(j)as unknown as O))
-
-                    }
-                )
+    return res
 }
 
 const fDBGetBatch=<F extends FTable<FTableSchema>>(table:F, tenant:string, ids: string[])=>{
@@ -279,22 +290,20 @@ const fDBGetBatch=<F extends FTable<FTableSchema>>(table:F, tenant:string, ids: 
         "FDBTableEntry":`${table.name}#${i}`
     }))
 
-    const res = ResultAsync.fromThrowable(async ()=>(await ddbDocClient.send( 
-        new BatchGetCommand({
-            RequestItems: {
-                [Resource.FunkyDBTable.name]: {
-                    "Keys": keys
+    const res = ResultAsync.fromThrowable(async ()=>{
+        const u = await ddbDocClient.send( 
+            new BatchGetCommand({
+                RequestItems: {
+                    [Resource.FunkyDBTable.name]: {
+                        "Keys": keys
+                    }
                 }
-            }
-        })
-    )))()
+            })
+        )
+        return (u.Responses?.[Resource.FunkyDBTable.name]??[]).map((j)=>(table.z.parse(j)as unknown as O))
+    })()
 
-    return res.map(
-        (r)=>{
-            return (r.Responses?.[Resource.FunkyDBTable.name]??[]).map((j)=>(table.z.parse(j)as unknown as O))
-
-        }
-    )
+    return res
 }
 
 

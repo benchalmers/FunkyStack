@@ -72,7 +72,7 @@ export default $config({
           }
           args.schemas=[{
             attributeDataType: 'String',
-            name: 'UserChallenge',
+            name: 'FAuthId',
             mutable: true,
             required: false
           }]
@@ -87,11 +87,20 @@ export default $config({
         exposeHeaders: ["content-type"],
       },
     });
+
+    const smartAddr = new sst.Linkable("SmartAddr", {
+      properties: {
+        host: $dev? 'localhost' : domainName.value,
+        hostPort: $dev? 'localhost:5173' : domainName.value,
+        proto: $dev ? 'http' : 'https'
+      }
+    })
+
     api.route('GET /{path+}', { handler: 'packages/api/trpc.handler',
-      link: [userPool, authTable, listTable, funkyDBTable, domainName]
+      link: [userPool, authTable, listTable, funkyDBTable, domainName, smartAddr]
     }, {});
     api.route('POST /{path+}', { handler: 'packages/api/trpc.handler',
-      link: [userPool, authTable, listTable, funkyDBTable, domainName]
+      link: [userPool, authTable, listTable, funkyDBTable, domainName, smartAddr]
     }, {});
 
     const finalName = domainName.value.apply(
@@ -154,6 +163,9 @@ export default $config({
     //   }).arn
     // })
 
+
+   
+
     const cognitoEndpoint = authDomain.domain.apply(t=>(`https://${t}.auth.eu-west-2.amazoncognito.com`))
 
     const appUrl = finalName.apply(t=>(`${$dev?'http':'https'}://${t}`))
@@ -185,7 +197,9 @@ export default $config({
       site: site.url,
       cognito: cognitoEndpoint,
       app: appUrl,
-      userPool: userPool.id
+      userPool: userPool.id,
+      host: $dev? 'localhost:5173' : domainName.value,
+
     }
     
 
